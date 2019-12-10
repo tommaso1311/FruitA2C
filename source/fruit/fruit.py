@@ -1,9 +1,9 @@
-import tifffile
-from libxmp import XMPFiles, consts
-import ast
-from src.fruit.defect import Defect
 from skimage.measure import label, regionprops
+from libxmp import XMPFiles, consts
+from src.fruit.defect import Defect
 from uuid import uuid4
+import tifffile
+import ast
 
 class Fruit:
 	"""
