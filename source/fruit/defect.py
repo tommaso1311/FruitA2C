@@ -15,6 +15,8 @@ class Defect:
 			ID of the defect (on the fruit)
 		props : RegionProps object
 			properties of the region
+		shot_ID : int
+			ID of the fruit shot
 		shot_size : array
 			sizes of the shot
 		"""

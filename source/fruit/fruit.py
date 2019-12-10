@@ -98,7 +98,7 @@ class Fruit:
 			labels = label(thresholds)
 			properties = regionprops(labels, coordinates="rc")
 
-			defects = [Defect(defect_index, props, shot.shape)\
+			defects = [Defect(defect_index, props, i, shot.shape)\
 						for defect_index, props in zip(ans, properties)]
 			shots_dict["shot_{0}".format(i)] = defects
 
