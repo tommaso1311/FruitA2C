@@ -1,7 +1,8 @@
 from skimage.measure import label, regionprops
 from libxmp import XMPFiles, consts
-from src.fruit.defect import Defect
+from source.fruit.defect import Defect
 from uuid import uuid4
+import numpy as np
 import tifffile
 import ast
 
@@ -25,17 +26,19 @@ class Fruit:
 		self.index = index
 
 		self.shots = self.load(load_path, index, defects_thresholds)
+
 		self.shots_tot = len(self.shots)
 		self.shots_keys = [key for key, vals in self.shots.items()]
 		self.shots_to_analyze = [shot for shot, defects_list in self.shots.items() if len(defects_list)]
 		self.shots_analyzed = []
 
-		self.is_analizable = len(self.shots_to_analyze) > 1	
+		self.is_analizable = len(self.shots_to_analyze) > 1
 
 		self.defects_tot = sum([len(self.shots[index]) for index in self.shots_to_analyze])
 
 		self.current_shot = None
 		self.d_index = None
+
 		if self.shots_to_analyze:
 			self.setup()
 		
@@ -95,7 +98,7 @@ class Fruit:
 			labels = label(thresholds)
 			properties = regionprops(labels, coordinates="rc")
 
-			defects = [Defect("{0}_{1}".format(fruit_index, i), defect_index, shot.shape, props)\
+			defects = [Defect(defect_index, props, shot.shape)\
 						for defect_index, props in zip(ans, properties)]
 			shots_dict["shot_{0}".format(i)] = defects
 
@@ -111,3 +114,18 @@ class Fruit:
 		for defect in self.shots[self.current_shot]:
 			defect.uuid = uuid4()
 			self.__next__()
+
+	def get_state(self):
+		"""
+		Gets the state vector
+
+		Returns
+		-------
+		state : array
+			state vector
+		"""
+
+		shots_progress = self.shots_index/self.shots_tot
+		defects_progress = self.defects_index/self.defects_tot
+
+		return np.array([shots_progress, defects_progress]).reshape((1, 2))
