@@ -10,5 +10,6 @@ ds = []
 
 for d in f:
 	ds.append(d)
+	print(d)
 
-print(ds[0]-ds[1])
+print(ds)
