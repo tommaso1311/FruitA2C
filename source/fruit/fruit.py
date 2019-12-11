@@ -15,6 +15,14 @@ class Fruit:
 		self.fruit_ID = fruit_ID
 
 		self.shots_to_analyze = Fruit.load_shots(fruit_ID, load_path, defects_thresholds)
+		self.shots_tot = len(self.shots_to_analyze)
+		self.defects_tot = sum([shot.defects_tot for shot in self.shots_to_analyze])
+
+		self.shots_analyzed = []
+		self.current_shot = None
+
+		self.is_analyzed = False
+		self.update_current_shot()
 
 	def __str__(self):
 		return f"Fruit {self.fruit_ID}"
@@ -30,3 +38,18 @@ class Fruit:
 				for i, (shot_array, defects_IDs) in enumerate(zip(shots_array, defects_IDs_list))]
 
 		return shots
+
+	def update_current_shot(self):
+
+		self.current_shot = self.shots_to_analyze.pop(0) if self.shots_to_analyze else None
+		if not (self.shots_to_analyze or self.current_shot):
+			self.is_analyzed = True
+
+	def get_current_shot(self):
+
+		current_shot = self.current_shot
+		if current_shot.is_analyzed:
+			self.shots_analyzed.append(self.current_shot)
+			self.update_current_shot()
+
+		return current_shot
