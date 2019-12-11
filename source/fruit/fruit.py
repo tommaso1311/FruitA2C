@@ -14,7 +14,7 @@ class Fruit:
 
 		self.fruit_ID = fruit_ID
 
-		self.shots = Fruit.load_shots(fruit_ID, load_path, defects_thresholds)
+		self.shots_to_analyze = Fruit.load_shots(fruit_ID, load_path, defects_thresholds)
 
 	def __str__(self):
 		return f"Fruit {self.fruit_ID}"

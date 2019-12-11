@@ -8,9 +8,15 @@ class Shot:
 		self.shot_ID = shot_ID
 		self.fruit_ID = fruit_ID
 
-		self.defects = Shot.load_defects(shot_ID, img_array, defects_IDs, defects_thresholds)
+		self.defects_to_analyze = Shot.load_defects(shot_ID, img_array, defects_IDs, defects_thresholds)
+		self.defects_tot = len(self.defects_to_analyze)
+
+		self.is_analyzed = False
 
 	def __str__(self):
+		return f"Shot {self.shot_ID} of Fruit {self.fruit_ID}"
+
+	def __repr__(self):
 		return f"Shot {self.shot_ID} of Fruit {self.fruit_ID}"
 
 	def load_defects(shot_ID, img_array, defects_IDs, defects_thresholds):

@@ -6,6 +6,6 @@ from os import path
 
 load_path = "./dataset/sample/"
 
-f = Fruit(0, load_path)
+f = Fruit(48, load_path)
 
-print([d for s in f.shots for d in s.defects])
+print([d for s in f.shots_to_analyze for d in s.defects_to_analyze])

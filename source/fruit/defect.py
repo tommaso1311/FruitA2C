@@ -23,10 +23,12 @@ class Defect:
 
 		self.defect_ID = defect_ID
 		self.shot_ID = shot_ID
-		self.defect_UUID = None
 
 		self.props = Defect.load_props(props, shot_size)
 		# self.guesses = []
+
+		self.defect_UUID = None
+		self.is_analyzed = False
 
 	def __repr__(self):
 		return f"Defect {self.defect_ID} of Shot {self.shot_ID}"
