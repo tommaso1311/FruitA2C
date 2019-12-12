@@ -56,7 +56,7 @@ class Fruit:
 
 		self.current_shot = self.defects_to_analyze.pop(0) if (self.defects_to_analyze and not self.current_shot) else self.current_shot
 		self.current_defect = self.current_shot.pop(0) if self.current_shot else self.current_defect
-		self.is_analyzed = True if not self.defects_to_analyze else False
+		self.is_analyzed = not (self.current_shot or self.defects_to_analyze)
 
 	def set_starting_UUIDs(self):
 		self.current_shot = self.defects_to_analyze.pop(0) if (self.defects_to_analyze and not self.current_shot) else self.current_shot
