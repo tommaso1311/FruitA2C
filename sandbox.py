@@ -8,5 +8,5 @@ load_path = "./dataset/sample/"
 
 f = Fruit(0, load_path)
 
-print(f.shots)
-print(f.defects)
+while not f.is_analyzed and f.is_analyzable:
+	print(f.get_current_defect())

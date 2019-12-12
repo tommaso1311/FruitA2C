@@ -9,6 +9,7 @@ class Shot:
 		self.fruit_ID = fruit_ID
 
 		self.defects = Shot.load_defects(shot_ID, img_array, defects_IDs, defects_thresholds)
+		self.is_analyzable = len(self.defects)>0
 
 	def __str__(self):
 		return f"Shot {self.shot_ID} of Fruit {self.fruit_ID}"

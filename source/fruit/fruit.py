@@ -14,10 +14,15 @@ class Fruit:
 
 		self.fruit_ID = fruit_ID
 
-		self.shots, self.defects = Fruit.load(fruit_ID, load_path, defects_thresholds)
+		self.shots, self.defects_to_analyze = Fruit.load(fruit_ID, load_path, defects_thresholds)
+		self.shots_tot = len(self.shots)
+		self.defects_tot = sum([len(defects) for defects in self.defects_to_analyze])
 
-		# self.defects_analyzed = []
-		# self.defects_tot = sum([shot.defects_tot for shot in self.shots])
+		self.current_shot = None
+		self.current_defect = None
+		self.defects_analyzed = []
+		self.is_analyzable = sum([shot.is_analyzable for shot in self.shots])>1
+		self.is_analyzed = False
 
 	def __str__(self):
 		return f"Fruit {self.fruit_ID}"
@@ -26,7 +31,7 @@ class Fruit:
 
 		name = path.join(load_path, f"{fruit_ID}.tiff")
 		shots_array = tifffile.TiffFile(name).asarray()
-		xmpfile = XMPFiles(file_path=name, open_forupdate=True).get_xmp()
+		xmpfile = XMPFiles(file_path=name).get_xmp()
 		defects_IDs_list = ast.literal_eval(xmpfile.get_property(consts.XMP_NS_DC, "description[1]"))
 
 		shots = [Shot(i, shot_array, defects_IDs, defects_thresholds, fruit_ID)\
@@ -34,23 +39,21 @@ class Fruit:
 
 		return shots
 
-	def load_defects(shot_number, img_array, defects_IDs, defects_thresholds):
-
-		thresholded_img = img_array < defects_thresholds[0]
-		labels = label(thresholded_img)
-		properties = regionprops(labels, coordinates="rc")
-
-		defects = [Defect(defect_ID, props, shot_number, img_array.shape)\
-					for defect_ID, props in zip(defects_IDs, properties)]
-
-		return defects
-
 	def load(fruit_ID, load_path, defects_thresholds):
 
 		shots = Fruit.load_shots(fruit_ID, load_path, defects_thresholds)
 
 		defects = []
 		for shot in shots:
-			defects.extend(shot.defects)
+			if shot.defects:
+				defects.append(shot.defects)
 
 		return shots, defects
+
+	def get_current_defect(self):
+
+		self.current_shot = self.defects_to_analyze.pop(0) if (self.defects_to_analyze and not self.current_shot) else self.current_shot
+		self.current_defect = self.current_shot.pop(0) if self.current_shot else self.current_defect
+		self.is_analyzed = True if not self.defects_to_analyze else False
+
+		return self.current_defect
