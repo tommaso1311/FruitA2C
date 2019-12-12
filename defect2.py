@@ -12,6 +12,7 @@ class Defect:
 		self.guesses = []
 
 		self.UUID = None
+		self.is_analyzed = False
 
 	def __repr__(self):
 		return f"Defect {self._ID} of Shot {self._shot_number} with UUID: {self.UUID}"
