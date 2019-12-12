@@ -5,7 +5,7 @@ import math
 
 class Defect:
 
-	def __init__(self, defect_ID, props, shot_number, shot_size):
+	def __init__(self, ID, props, shot_number, shot_size):
 		"""
 		Instantiates Defect objects
 
@@ -21,20 +21,20 @@ class Defect:
 			sizes of the shot
 		"""
 
-		self.defect_ID = defect_ID
+		self.ID = ID
 		self.shot_number = shot_number
 
 		self.props = Defect.load_props(props, shot_size)
-		# self.guesses = []
+		self.guesses = []
 
 		self.UUID = None
 		self.is_analyzed = False
 
 	def __repr__(self):
-		return f"Defect {self.defect_ID} of Shot {self.shot_number} with UUID: {self.UUID}"
+		return f"Defect {self.ID} of Shot {self.shot_number} with UUID: {self.UUID}"
 
 	def __str__(self):
-		return f"Defect {self.defect_ID} of Shot {self.shot_number} with UUID: {self.UUID}"
+		return f"Defect {self.ID} of Shot {self.shot_number} with UUID: {self.UUID}"
 
 	def __eq__(self, defect):
 		"""

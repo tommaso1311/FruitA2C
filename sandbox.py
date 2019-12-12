@@ -15,9 +15,13 @@ while not f.is_analyzed and f.is_analyzable:
 	f.update_current_defect()
 
 	for d in f.defects_analyzed:
-		pass
+
 		state = f.get_state(d)
-		print(state)
 		# action, action_idx = agent.policy()
 		# value = agent.value()
-		# reward = fruit.apply_action / add_guess
+		reward = f.add_guess(d, "same")
+		print(reward)
+
+	f.apply_UUID()
+
+print([d for d in f.defects_analyzed])

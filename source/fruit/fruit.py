@@ -5,6 +5,7 @@ import tifffile
 import ast
 import numpy as np
 from os import path
+from source.a2c import utils
 
 class Fruit:
 
@@ -79,3 +80,24 @@ class Fruit:
 		delta_state = self.current_defect - defect
 
 		return np.hstack((rolling_state, delta_state))
+
+	def add_guess(self, defect, action):
+
+		print(action)
+		if action == utils.consts.SAME:
+			self.current_defect.guesses.append(defect.UUID)
+			if self.current_defect == defect:
+				return utils.consts.CORRECT_GUESS_REWARD
+			else:
+				return utils.consts.WRONG_GUESS_REWARD
+		elif self.action == utils.consts.DIFFERENT:
+			if self.current_defect == defect:
+				return utils.consts.WRONG_GUESS_REWARD
+			else:
+				return utils.consts.CORRECT_GUESS_REWARD
+
+	def apply_UUID(self):
+
+		new_UUID = max(set(self.current_defect.guesses), key=self.current_defect.guesses.count)
+		self.current_defect.UUID = new_UUID
+		self.defects_analyzed.append(self.current_defect)

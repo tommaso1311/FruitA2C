@@ -34,3 +34,14 @@ def discount(x, gamma):
 		discount parameter
 	"""
 	return lfilter([1], [1, -gamma], x[::-1], axis=0)[::-1]
+
+class consts:
+
+	SAME = "same"
+	# WAIT = "wait"
+	DIFFERENT = "different"
+
+	ACTIONS = [SAME, DIFFERENT]
+
+	CORRECT_GUESS_REWARD = +1
+	WRONG_GUESS_REWARD = -1
