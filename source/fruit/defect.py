@@ -5,7 +5,7 @@ import math
 
 class Defect:
 
-	def __init__(self, defect_ID, props, shot_ID, shot_size):
+	def __init__(self, defect_ID, props, shot_number, shot_size):
 		"""
 		Instantiates Defect objects
 
@@ -15,14 +15,14 @@ class Defect:
 			ID of the defect (on the fruit)
 		props : RegionProps object
 			properties of the region
-		shot_ID : int
+		shot_number : int
 			ID of the fruit shot
 		shot_size : array
 			sizes of the shot
 		"""
 
 		self.defect_ID = defect_ID
-		self.shot_ID = shot_ID
+		self.shot_number = shot_number
 
 		self.props = Defect.load_props(props, shot_size)
 		# self.guesses = []
@@ -31,10 +31,10 @@ class Defect:
 		self.is_analyzed = False
 
 	def __repr__(self):
-		return f"Defect {self.defect_ID} of Shot {self.shot_ID}"
+		return f"Defect {self.defect_ID} of Shot {self.shot_number}"
 
 	def __str__(self):
-		return f"Defect {self.defect_ID} of Shot {self.shot_ID} with UUID: {self.defect_UUID}"
+		return f"Defect {self.defect_ID} of Shot {self.shot_number} with UUID: {self.defect_UUID}"
 
 	def __eq__(self, defect):
 		"""
