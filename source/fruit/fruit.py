@@ -1,11 +1,9 @@
-from skimage.measure import label, regionprops
 from source.fruit.shot import Shot
 from libxmp import XMPFiles, consts
-from source.fruit.defect import Defect
 from uuid import uuid4
-import numpy as np
 import tifffile
 import ast
+import numpy as np
 from os import path
 
 class Fruit:
@@ -20,9 +18,12 @@ class Fruit:
 
 		self.current_shot = None
 		self.current_defect = None
+
 		self.defects_analyzed = []
 		self.is_analyzable = sum([shot.is_analyzable for shot in self.shots])>1
 		self.is_analyzed = False
+
+		self.set_starting_UUIDs()
 
 	def __str__(self):
 		return f"Fruit {self.fruit_ID}"
@@ -50,10 +51,31 @@ class Fruit:
 
 		return shots, defects
 
-	def get_current_defect(self):
+	def update_current_defect(self):
 
 		self.current_shot = self.defects_to_analyze.pop(0) if (self.defects_to_analyze and not self.current_shot) else self.current_shot
 		self.current_defect = self.current_shot.pop(0) if self.current_shot else self.current_defect
 		self.is_analyzed = True if not self.defects_to_analyze else False
 
-		return self.current_defect
+	def set_starting_UUIDs(self):
+		self.current_shot = self.defects_to_analyze.pop(0) if (self.defects_to_analyze and not self.current_shot) else self.current_shot
+		for _ in range(len(self.current_shot)):
+			self.update_current_defect()
+			self.current_defect.UUID = uuid4()
+			self.defects_analyzed.append(self.current_defect)
+
+	def get_rolling_state(self):
+
+		shots_progress = self.current_defect.shot_number/self.shots_tot
+		defects_progress = len(self.defects_analyzed)/self.defects_tot
+
+		rolling_state = np.array([shots_progress, defects_progress]).reshape((1, 2))
+
+		return rolling_state
+
+	def get_state(self, defect):
+
+		rolling_state = self.get_rolling_state()
+		delta_state = self.current_defect - defect
+
+		return np.hstack((rolling_state, delta_state))

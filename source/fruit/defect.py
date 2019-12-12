@@ -27,14 +27,14 @@ class Defect:
 		self.props = Defect.load_props(props, shot_size)
 		# self.guesses = []
 
-		self.defect_UUID = None
+		self.UUID = None
 		self.is_analyzed = False
 
 	def __repr__(self):
-		return f"Defect {self.defect_ID} of Shot {self.shot_number}"
+		return f"Defect {self.defect_ID} of Shot {self.shot_number} with UUID: {self.UUID}"
 
 	def __str__(self):
-		return f"Defect {self.defect_ID} of Shot {self.shot_number} with UUID: {self.defect_UUID}"
+		return f"Defect {self.defect_ID} of Shot {self.shot_number} with UUID: {self.UUID}"
 
 	def __eq__(self, defect):
 		"""
