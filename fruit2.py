@@ -97,3 +97,23 @@ class Fruit:
 		for _ in self._current_shot:
 			self.update_current_defect()
 			self.apply_UUID()
+
+	def get_defects_analyzed(self):
+
+		defects_analyzed = [d for s in self.shots_analyzed for d in s]
+		return defects_analyzed
+
+	def get_rolling_state(self):
+
+		shots_progress = self.current_defect.shot_number/self._shots_tot
+		defects_progress = sum([len(shot) for shot in self.shots_analyzed])/self._defects_tot
+
+		rolling_state = np.array([shots_progress, defects_progress]).reshape((1, 2))
+		return rolling_state
+
+	def get_state(self, defect):
+
+		rolling_state = self.get_rolling_state()
+		delta_state = self.current_defect - defect
+
+		return np.hstack((rolling_state, delta_state))

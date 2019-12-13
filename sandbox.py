@@ -9,15 +9,17 @@ load_path = "./dataset/sample/"
 
 f = Fruit(0, load_path)
 
-print(f.shots_analyzed)
-
 while f.is_analyzable():
 	f.update_current_defect()
-	print(f.current_defect)
-	# do smth
+
+	for d in f.get_defects_analyzed():
+		print(f"Confronting {f.current_defect} with {d}")
+
+		state = f.get_state(d)
+		print(f"State is {state[0]}")
+
 	f.apply_UUID()
 
-print(f.shots_analyzed)
 # while not f.is_analyzed and f.is_analyzable:
 	
 # 	f.update_current_defect()

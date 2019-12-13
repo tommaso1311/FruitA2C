@@ -6,7 +6,7 @@ class Defect:
 	def __init__(self, ID, props, shot_number, shot_size):
 
 		self._ID = ID
-		self._shot_number = shot_number
+		self.shot_number = shot_number
 
 		self._props = Defect.load_props(props, shot_size)
 		self.guesses = []
@@ -15,22 +15,22 @@ class Defect:
 		self.is_analyzed = False
 
 	def __repr__(self):
-		return f"Defect {self._ID} of Shot {self._shot_number} with UUID: {self.UUID}"
+		return f"Defect {self._ID} of Shot {self.shot_number} with UUID: {self.UUID}"
 
 	def __str__(self):
-		return f"Defect {self._ID} of Shot {self._shot_number} with UUID: {self.UUID}"
+		return f"Defect {self._ID} of Shot {self.shot_number} with UUID: {self.UUID}"
 
 	def __eq__(self, defect):
 		return self._ID == defect._ID
 
 	def __sub__(self, defect):
 
-		delta = np.zeros(len(self.props))
+		delta = np.zeros(len(self._props))
 
-		for i, (key, val) in enumerate(self.props.items()):
-			delta[i] = 1 - np.abs(val - defect.props[key])
+		for i, (key, val) in enumerate(self._props.items()):
+			delta[i] = 1 - np.abs(val - defect._props[key])
 
-		return np.array(delta).reshape((1, len(self.props)))
+		return np.array(delta).reshape((1, len(self._props)))
 
 	def load_props(props, shot_size):
 
