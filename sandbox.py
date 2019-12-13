@@ -8,35 +8,14 @@ from os import path
 load_path = "./dataset/sample/"
 
 f = Fruit(0, load_path)
-f.update_current_defect()
 
-print(f._current_defect)
+while f.is_analyzable():
+	f.update_current_defect()
+	d = f.current_defect
+	print(d)
+	# do smth
+	f.apply_UUID(d)
 
-f._current_defect.is_analyzed = True
-
-f.update_current_defect()
-
-print(f._current_defect)
-
-f._current_defect.is_analyzed = True
-
-f.update_current_defect()
-
-print(f._current_defect)
-
-f._current_defect.is_analyzed = True
-
-f.update_current_defect()
-
-print(f._current_defect)
-
-f._current_defect.is_analyzed = True
-
-f.update_current_defect()
-
-print(f._current_defect)
-
-f._current_defect.is_analyzed = True
 
 # while not f.is_analyzed and f.is_analyzable:
 	
