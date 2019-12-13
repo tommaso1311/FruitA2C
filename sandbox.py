@@ -9,6 +9,8 @@ load_path = "./dataset/sample/"
 
 f = Fruit(0, load_path)
 
+print(f.shots_analyzed)
+
 while f.is_analyzable():
 	f.update_current_defect()
 	d = f.current_defect
@@ -16,7 +18,7 @@ while f.is_analyzable():
 	# do smth
 	f.apply_UUID(d)
 
-
+print(f.shots_analyzed)
 # while not f.is_analyzed and f.is_analyzable:
 	
 # 	f.update_current_defect()
