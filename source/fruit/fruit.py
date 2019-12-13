@@ -1,4 +1,3 @@
-from source.fruit.shot import Shot
 from libxmp import XMPFiles, consts
 from uuid import uuid4
 import tifffile
@@ -6,28 +5,39 @@ import ast
 import numpy as np
 from os import path
 from source.a2c import utils
+from skimage.measure import label, regionprops
+from source.fruit.defect import Defect
 
 class Fruit:
 
 	def __init__(self, fruit_ID, load_path, defects_thresholds=[160]):
+		
+		self._fruit_ID = fruit_ID
 
-		self.fruit_ID = fruit_ID
+		self.shots = Fruit.load_shots(fruit_ID, load_path, defects_thresholds)
 
-		self.shots, self.defects_to_analyze = Fruit.load(fruit_ID, load_path, defects_thresholds)
-		self.shots_tot = len(self.shots)
-		self.defects_tot = sum([len(defects) for defects in self.defects_to_analyze])
+		self._shots_tot = len(self.shots)
+		self._defects_tot = sum([len(shot) for shot in self.shots])
 
-		self.current_shot = None
+		self._current_shot = []
 		self.current_defect = None
 
-		self.defects_analyzed = []
-		self.is_analyzable = sum([shot.is_analyzable for shot in self.shots])>1
-		self.is_analyzed = False
-
+		self.shots_analyzed = []
 		self.set_starting_UUIDs()
 
 	def __str__(self):
-		return f"Fruit {self.fruit_ID}"
+		return f"Fruit {self._fruit_ID}"
+
+	def load_defects(shot_number, shot_array, defects_IDs, defects_thresholds):
+
+		thresholded_img = shot_array < defects_thresholds[0]
+		labels = label(thresholded_img)
+		properties = regionprops(labels, coordinates="rc")
+
+		defects = [Defect(defect_ID, props, shot_number, shot_array.shape)\
+					for defect_ID, props in zip(defects_IDs, properties)]
+
+		return defects
 
 	def load_shots(fruit_ID, load_path, defects_thresholds):
 
@@ -36,42 +46,65 @@ class Fruit:
 		xmpfile = XMPFiles(file_path=name).get_xmp()
 		defects_IDs_list = ast.literal_eval(xmpfile.get_property(consts.XMP_NS_DC, "description[1]"))
 
-		shots = [Shot(i, shot_array, defects_IDs, defects_thresholds, fruit_ID)\
-				for i, (shot_array, defects_IDs) in enumerate(zip(shots_array, defects_IDs_list))]
+		fruit_shots = []
+		for shot_number, (shot_array, defects_IDs) in enumerate(zip(shots_array, defects_IDs_list)):
+			shot_defects = Fruit.load_defects(shot_number, shot_array, defects_IDs, defects_thresholds)
+			fruit_shots.append(shot_defects)
 
-		return shots
+		return fruit_shots
 
-	def load(fruit_ID, load_path, defects_thresholds):
+	def defects_to_analyze(self):
+		return any([not defect.is_analyzed for defect in self._current_shot])
 
-		shots = Fruit.load_shots(fruit_ID, load_path, defects_thresholds)
+	def shots_to_analyze(self):
+		return any(self.shots)
 
-		defects = []
-		for shot in shots:
-			if shot.defects:
-				defects.append(shot.defects)
+	def is_analyzable(self):
+		return self.defects_to_analyze() or self.shots_to_analyze()
 
-		return shots, defects
+	def update_current_shot(self):
+		if all([defect.is_analyzed for defect in self._current_shot]):
+			next_shot_index = next(i for i, shot in enumerate(self.shots) if shot) if self.is_analyzable() else 0
+			self._current_shot = self.shots.pop(next_shot_index)
 
 	def update_current_defect(self):
+		self.update_current_shot()
 
-		self.current_shot = self.defects_to_analyze.pop(0) if (self.defects_to_analyze and not self.current_shot) else self.current_shot
-		self.current_defect = self.current_shot.pop(0) if self.current_shot else self.current_defect
-		self.is_analyzed = not (self.current_shot or self.defects_to_analyze)
+		if not self.current_defect or self.current_defect.is_analyzed:
+			next_defect_index = next(i for i, defect in enumerate(self._current_shot) if not defect.is_analyzed)
+			self.current_defect = self._current_shot[next_defect_index]
+
+	def apply_UUID(self):
+
+		if self.current_defect.guesses:
+			new_UUID = max(set(self.current_defect.guesses), key=self.current_defect.guesses.count)
+		else:
+			new_UUID = uuid4()
+
+		self.current_defect.UUID = new_UUID
+
+		self.current_defect.is_analyzed = True
+		if not self.defects_to_analyze():
+			self.shots_analyzed.append(self._current_shot)
 
 	def set_starting_UUIDs(self):
-		self.current_shot = self.defects_to_analyze.pop(0) if (self.defects_to_analyze and not self.current_shot) else self.current_shot
-		for _ in range(len(self.current_shot)):
+
+		self.update_current_shot()
+		for _ in self._current_shot:
 			self.update_current_defect()
-			self.current_defect.UUID = uuid4()
-			self.defects_analyzed.append(self.current_defect)
+			self.apply_UUID()
+
+	def get_defects_analyzed(self):
+
+		defects_analyzed = [d for s in self.shots_analyzed for d in s]
+		return defects_analyzed
 
 	def get_rolling_state(self):
 
-		shots_progress = self.current_defect.shot_number/self.shots_tot
-		defects_progress = len(self.defects_analyzed)/self.defects_tot
+		shots_progress = self.current_defect.shot_number/self._shots_tot
+		defects_progress = sum([len(shot) for shot in self.shots_analyzed])/self._defects_tot
 
 		rolling_state = np.array([shots_progress, defects_progress]).reshape((1, 2))
-
 		return rolling_state
 
 	def get_state(self, defect):
@@ -83,7 +116,6 @@ class Fruit:
 
 	def add_guess(self, defect, action):
 
-		print(action)
 		if action == utils.consts.SAME:
 			self.current_defect.guesses.append(defect.UUID)
 			if self.current_defect == defect:
@@ -95,9 +127,3 @@ class Fruit:
 				return utils.consts.WRONG_GUESS_REWARD
 			else:
 				return utils.consts.CORRECT_GUESS_REWARD
-
-	def apply_UUID(self):
-
-		new_UUID = max(set(self.current_defect.guesses), key=self.current_defect.guesses.count)
-		self.current_defect.UUID = new_UUID
-		self.defects_analyzed.append(self.current_defect)
