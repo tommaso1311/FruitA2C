@@ -13,10 +13,9 @@ print(f.shots_analyzed)
 
 while f.is_analyzable():
 	f.update_current_defect()
-	d = f.current_defect
-	print(d)
+	print(f.current_defect)
 	# do smth
-	f.apply_UUID(d)
+	f.apply_UUID()
 
 print(f.shots_analyzed)
 # while not f.is_analyzed and f.is_analyzable:

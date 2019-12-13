@@ -23,6 +23,7 @@ class Fruit:
 		self.current_defect = None
 
 		self.shots_analyzed = []
+		self.set_starting_UUIDs()
 		# self.is_analyzed = False
 		# self.is_analyzable = sum([True for shot in self.shots if shot])>1
 
@@ -67,7 +68,7 @@ class Fruit:
 
 	def update_current_shot(self):
 		if all([defect.is_analyzed for defect in self._current_shot]):
-			next_shot_index = next(i for i, shot in enumerate(self.shots) if shot) if self.is_analyzable else 0
+			next_shot_index = next(i for i, shot in enumerate(self.shots) if shot) if self.is_analyzable() else 0
 			self._current_shot = self.shots.pop(next_shot_index)
 
 	def update_current_defect(self):
@@ -77,10 +78,22 @@ class Fruit:
 			next_defect_index = next(i for i, defect in enumerate(self._current_shot) if not defect.is_analyzed)
 			self.current_defect = self._current_shot[next_defect_index]
 
+	def apply_UUID(self):
 
+		if self.current_defect.guesses:
+			new_UUID = max(set(self.current_defect.guesses), key=self.current_defect.guesses.count)
+		else:
+			new_UUID = uuid4()
 
-	def apply_UUID(self, defect):
+		self.current_defect.UUID = new_UUID
 
-		defect.is_analyzed = True
+		self.current_defect.is_analyzed = True
 		if not self.defects_to_analyze():
 			self.shots_analyzed.append(self._current_shot)
+
+	def set_starting_UUIDs(self):
+
+		self.update_current_shot()
+		for _ in self._current_shot:
+			self.update_current_defect()
+			self.apply_UUID()
