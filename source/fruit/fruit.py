@@ -10,7 +10,7 @@ from source.fruit.defect import Defect
 
 class Fruit:
 
-	def __init__(self, fruit_ID, load_path, defects_thresholds=[160]):
+	def __init__(self, fruit_ID, load_path="./dataset/dataset/", defects_thresholds=[160]):
 		
 		self._fruit_ID = fruit_ID
 
@@ -122,7 +122,7 @@ class Fruit:
 				return utils.consts.CORRECT_GUESS_REWARD
 			else:
 				return utils.consts.WRONG_GUESS_REWARD
-		elif self.action == utils.consts.DIFFERENT:
+		elif action == utils.consts.DIFFERENT:
 			if self.current_defect == defect:
 				return utils.consts.WRONG_GUESS_REWARD
 			else:
