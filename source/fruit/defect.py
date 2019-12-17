@@ -42,6 +42,6 @@ class Defect:
 		props_dict["center_y"] = props.centroid[1]/shot_size[0]
 		props_dict["eccentricity"] = props.eccentricity
 		props_dict["solidity"] = props.solidity
-		props_dict["circularity"] = (4*PI*props.area)/(props.perimeter**2)
+		props_dict["circularity"] = (4*PI*props.area)/(props.perimeter**2) if (props.perimeter**2) else 1
 
 		return props_dict

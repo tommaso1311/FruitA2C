@@ -73,8 +73,9 @@ class Agent:
 		with sess.as_default(), sess.graph.as_default():
 			while fruits_analyzed < max_fruits_analyzed:
 
-				fruit = Fruit(fruits_analyzed)
-				# print(f"Analyzing Fruit {fruits_analyzed}")
+				# fruit = Fruit.from_file(fruits_analyzed)
+				fruit = Fruit.online(fruits_analyzed)
+
 				print(f"Analyzing {fruits_analyzed} over {max_fruits_analyzed}", end="\r", flush=True)
 
 				fruit_buffer = []
@@ -87,8 +88,6 @@ class Agent:
 
 					for defect in fruit.get_defects_analyzed():
 
-						# print(f"Analyzing {fruit.current_defect} and {defect}")
-
 						state = fruit.get_state(defect)
 						action, action_idx = self.policy(sess, state, epsilon)
 						value = self.value(sess, state)
@@ -100,8 +99,9 @@ class Agent:
 
 					fruit.apply_UUID()
 
-				fruit_avg_reward = np.mean(fruit_rewards)
-				fruit_avg_value = np.mean(fruit_values)
+				if len(fruit_buffer) != 0:
+					fruit_avg_reward = np.mean(fruit_rewards)
+					fruit_avg_value = np.mean(fruit_values)
 
 				if len(fruit_buffer) != 0:
 					v_l, p_l, e_l, t_l = self.update(sess, fruit_buffer, gamma, 0.0)

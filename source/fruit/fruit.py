@@ -7,14 +7,15 @@ from os import path
 from source.a2c import utils
 from skimage.measure import label, regionprops
 from source.fruit.defect import Defect
+from source.fruit_dataset.spherical_fruit import SphericalFruit
 
 class Fruit:
 
-	def __init__(self, fruit_ID, load_path="./dataset/dataset/", defects_thresholds=[160]):
+	def __init__(self, fruit_ID, shots):
 		
 		self._fruit_ID = fruit_ID
 
-		self.shots = Fruit.load_shots(fruit_ID, load_path, defects_thresholds)
+		self.shots = shots
 
 		self._shots_tot = len(self.shots)
 		self._defects_tot = sum([len(shot) for shot in self.shots])
@@ -24,6 +25,22 @@ class Fruit:
 
 		self.shots_analyzed = []
 		self.set_starting_UUIDs()
+
+	@classmethod
+	def from_file(cls, fruit_ID=0, load_path="./dataset/dataset/", defects_thresholds=[160]):
+
+		shots = Fruit.load_shots_from_file(fruit_ID, load_path, defects_thresholds)
+		return cls(fruit_ID, shots)
+
+	@classmethod
+	def online(cls, fruit_ID=0, n_shots=6, defects_list=[(2, 3)], defects_thresholds=[160],
+						lon_angle_rot=(-15, 45), lat_angle_rot=(-1, 1), n_pixels=200000,
+						colors=['darkseagreen','saddlebrown'], size=(4, 4)):
+
+		shots = Fruit.load_shots_online(fruit_ID, n_shots, defects_list, defects_thresholds,
+						lon_angle_rot, lat_angle_rot, n_pixels,
+						colors, size)
+		return cls(fruit_ID, shots)
 
 	def __str__(self):
 		return f"Fruit {self._fruit_ID}"
@@ -39,12 +56,29 @@ class Fruit:
 
 		return defects
 
-	def load_shots(fruit_ID, load_path, defects_thresholds):
+	def load_shots_from_file(fruit_ID, load_path, defects_thresholds):
 
 		name = path.join(load_path, f"{fruit_ID}.tiff")
 		shots_array = tifffile.TiffFile(name).asarray()
 		xmpfile = XMPFiles(file_path=name).get_xmp()
 		defects_IDs_list = ast.literal_eval(xmpfile.get_property(consts.XMP_NS_DC, "description[1]"))
+
+		fruit_shots = []
+		for shot_number, (shot_array, defects_IDs) in enumerate(zip(shots_array, defects_IDs_list)):
+			shot_defects = Fruit.load_defects(shot_number, shot_array, defects_IDs, defects_thresholds)
+			fruit_shots.append(shot_defects)
+
+		return fruit_shots
+
+	def load_shots_online(fruit_ID, n_shots, defects_list, defects_thresholds,
+						lon_angle_rot, lat_angle_rot, n_pixels,
+						colors, size):
+		fruit = SphericalFruit(fruit_ID, n_pixels, colors)
+		fruit.generate_defects(defects_list)
+
+		shots_array, defects_IDs_list = fruit.generate_shots_online(n_shots, size,
+																	lon_angle_rot,
+																	lat_angle_rot)
 
 		fruit_shots = []
 		for shot_number, (shot_array, defects_IDs) in enumerate(zip(shots_array, defects_IDs_list)):
