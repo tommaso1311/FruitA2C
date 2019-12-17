@@ -130,3 +130,5 @@ dmypy.json
 
 # extra
 /dataset/
+/graphs/
+/model/
