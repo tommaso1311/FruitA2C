@@ -1,3 +1,7 @@
+import os
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3' 
+import tensorflow as tf
+tf.logging.set_verbosity(tf.logging.ERROR)
 import source.train as train
 # import source.test as test
 
@@ -7,8 +11,8 @@ n_inputs = 7
 n_actions = 2
 
 starting_index = 0
-final_index = 10000
-step = 1000
+final_index = 100
+step = 10
 
 gamma = 0.99
 epsilon = 0.0

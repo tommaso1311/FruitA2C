@@ -1,8 +1,7 @@
 import os
-os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
-os.environ['PYGAME_HIDE_SUPPORT_PROMPT'] = "hide"
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3' 
 import tensorflow as tf
-
+tf.logging.set_verbosity(tf.logging.ERROR)
 from source.a2c.network import Network
 from source.a2c.agent import Agent
 

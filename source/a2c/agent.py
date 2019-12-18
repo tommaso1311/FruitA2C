@@ -1,19 +1,24 @@
 from source.fruit.fruit import Fruit
 from source.a2c import utils
 from source.a2c.network import Network
+import os
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3' 
 import tensorflow as tf
+tf.logging.set_verbosity(tf.logging.ERROR)
 import numpy as np
 import random
-import os
+import multiprocessing as mp
 
 class Agent:
 
-	def __init__(self, n_inputs, n_actions, trainer, model_path):
+	def __init__(self, n_inputs, n_actions, trainer, model_path, online=True):
 
 		self.model_path = model_path
 		self.actions_available = utils.consts.ACTIONS
 		self.network = Network(n_inputs, n_actions, trainer)
 		self.summary_writer = tf.summary.FileWriter("./graphs")
+
+		self.online = online
 
 	def policy(self, sess, input_vector, epsilon):
 
@@ -66,15 +71,40 @@ class Agent:
 		length = len(fruit_buffer)
 		return value_loss/length, policy_loss/length, entropy_loss/length, total_loss/length
 
+	def add_fruit_to_queue(self, queue):
+			fruit = Fruit.online()
+			queue.put(fruit)
+			print("fruit added to queue")
+			print(f"queue size {queue.qsize()}")
+
 	def train(self, sess, gamma, epsilon, saver,
 				fruits_analyzed, max_fruits_analyzed,
 				buffer_length=5, graphs_step=5):
+
+		if self.online:
+
+			self.N_PROCS = 5
+
+			total_fruits = max_fruits_analyzed-fruits_analyzed
+			print(total_fruits)
+			queue = mp.Queue(maxsize=total_fruits)
+
+			while not queue.full():
+				workers = []
+				for i in range(self.N_PROCS):
+
+					p = mp.Process(target=(self.add_fruit_to_queue), args=(queue,))
+					p.start()
+					workers.append(p)
+
+				for p in workers:
+					p.join()
 
 		with sess.as_default(), sess.graph.as_default():
 			while fruits_analyzed < max_fruits_analyzed:
 
 				# fruit = Fruit.from_file(fruits_analyzed)
-				fruit = Fruit.online(fruits_analyzed)
+				fruit = queue.get()
 
 				print(f"Analyzing {fruits_analyzed} over {max_fruits_analyzed}", end="\r", flush=True)
 
