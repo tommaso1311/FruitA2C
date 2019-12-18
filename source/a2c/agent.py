@@ -72,10 +72,12 @@ class Agent:
 		return value_loss/length, policy_loss/length, entropy_loss/length, total_loss/length
 
 	def add_fruit_to_queue(self, queue):
+		# print("func is run")
+		while not queue.full():
 			fruit = Fruit.online()
 			queue.put(fruit)
-			print("fruit added to queue")
-			print(f"queue size {queue.qsize()}")
+			# print("fruit added to queue")
+			# print(f"queue size {queue.qsize()}")
 
 	def train(self, sess, gamma, epsilon, saver,
 				fruits_analyzed, max_fruits_analyzed,
@@ -83,22 +85,28 @@ class Agent:
 
 		if self.online:
 
-			self.N_PROCS = 5
+			N_PROCS = 5
 
 			total_fruits = max_fruits_analyzed-fruits_analyzed
-			print(total_fruits)
 			queue = mp.Queue(maxsize=total_fruits)
 
-			while not queue.full():
-				workers = []
-				for i in range(self.N_PROCS):
+			pool = mp.Pool(N_PROCS, self.add_fruit_to_queue, (queue,))
+			# print("Created Pool")
+			pool.apply_async(self.add_fruit_to_queue, (queue,))
 
-					p = mp.Process(target=(self.add_fruit_to_queue), args=(queue,))
-					p.start()
-					workers.append(p)
+			# while not queue.full():
+			# 	print("DEBUG")
+			# 	workers = []
+			# 	for i in range(self.N_PROCS):
 
-				for p in workers:
-					p.join()
+			# 		p = mp.Process(target=(self.add_fruit_to_queue), args=(queue,))
+			# 		p.start()
+			# 		workers.append(p)
+
+			# 	for p in workers:
+			# 		p.join()
+			# pool.close()
+			# pool.join()
 
 		with sess.as_default(), sess.graph.as_default():
 			while fruits_analyzed < max_fruits_analyzed:
@@ -152,5 +160,6 @@ class Agent:
 					self.summary_writer.flush()
 
 				fruits_analyzed += 1
-
+			pool.join()
+			pool.close()
 			saver.save(sess, self.model_path+'/model-'+str(fruits_analyzed)+'.cptk')

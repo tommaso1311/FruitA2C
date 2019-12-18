@@ -13,14 +13,13 @@ def run(n_inputs, n_actions, model_path, load_model, gamma, epsilon,
 	if not os.path.exists(model_path):
 		os.makedirs(model_path)
 
-	with tf.device("/gpu:0"):
+	with tf.device("/cpu:0"):
 
 		trainer = tf.train.AdamOptimizer(learning_rate=1e-4)
 		agent = Agent(n_inputs, n_actions, trainer, model_path)
 		saver = tf.train.Saver(max_to_keep=5)
 
-	with tf.Session(config=tf.ConfigProto(allow_soft_placement=True,
-			log_device_placement=True)) as sess:
+	with tf.Session() as sess:
 
 		if load_model == True:
 			ckpt = tf.train.get_checkpoint_state(model_path)
