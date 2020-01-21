@@ -3,12 +3,15 @@ from math import pi as PI
 
 class Defect:
 
-	def __init__(self, ID, props, shot_number, shot_size):
+	def __init__(self, ID, props, shot_number, shot_size=None, props_ready=False):
 
 		self._ID = ID
 		self.shot_number = shot_number
 
-		self._props = Defect.load_props(props, shot_size)
+		if not props_ready:
+			self._props = Defect.load_props(props, shot_size)
+		else:
+			self._props = props
 		self.guesses = []
 
 		self.UUID = None

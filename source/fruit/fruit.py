@@ -8,6 +8,7 @@ from source.a2c import utils
 from skimage.measure import label, regionprops
 from source.fruit.defect import Defect
 from source.fruit_dataset.spherical_fruit import SphericalFruit
+import pandas as pd
 
 class Fruit:
 
@@ -40,6 +41,33 @@ class Fruit:
 		shots = Fruit.load_shots_online(fruit_ID, n_shots, defects_list, defects_thresholds,
 						lon_angle_rot, lat_angle_rot, n_pixels,
 						colors, size)
+		return cls(fruit_ID, shots)
+
+	@classmethod
+	def from_dataset(cls, dataset, fruit_ID):
+		df = pd.read_csv(dataset)
+		fruit = df[df["item"]==fruit_ID]
+		N_shots = fruit["view"].unique()
+
+		max_x_pos = np.max(np.abs(fruit["x_pos"]))
+		max_y_pos = np.max(np.abs(fruit["y_pos"]))
+
+		shots = []
+		for shot_number in N_shots:
+			defects = []
+			for index, defect in fruit[fruit["view"]==shot_number].iterrows():
+				defect_ID = defect["defect"]
+				props = {}
+				props["x_pos"] = defect["x_pos"]/max_x_pos
+				props["y_pos"] = defect["y_pos"]/max_y_pos
+				props["eccentricity"] = defect["eccentricity"]
+				props["circularity"] = defect["circularity"]
+				props["solidity"] = defect["solidity"]
+
+				defects.append(Defect(defect_ID, props, shot_number, props_ready=True))
+
+			shots.append(defects)
+
 		return cls(fruit_ID, shots)
 
 	def __str__(self):

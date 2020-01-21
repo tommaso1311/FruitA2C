@@ -13,8 +13,8 @@ n_inputs = 7
 n_actions = 2
 
 starting_index = 0
-final_index = 250000
-step = 1000
+final_index = 10
+step = 10
 
 gamma = 0.1
 epsilon = 0.0

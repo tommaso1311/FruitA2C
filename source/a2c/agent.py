@@ -102,7 +102,8 @@ class Agent:
 			while fruits_analyzed < max_fruits_analyzed:
 
 				# fruit = Fruit.from_file(fruits_analyzed)
-				fruit = self.queue.get()
+				# fruit = self.queue.get()
+				fruit = Fruit.from_dataset("./dataset/kiwi_ready.csv", fruits_analyzed)
 
 				print(f"Analyzing {fruits_analyzed} over {max_fruits_analyzed}", end="\r", flush=True)
 
@@ -170,15 +171,15 @@ class Agent:
 			saver.save(sess, self.model_path+'/model-'+str(fruits_analyzed)+'.cptk')
 
 			df_rewards = pd.Series(fruit_avg_rewards)
-			df_rewards.to_csv("./graphs2/rewards/"+f"rewards_{max_fruits_analyzed}.csv", header=False)
+			df_rewards.to_csv("./results/rewards/"+f"rewards_{max_fruits_analyzed}.csv", header=False)
 			df_values = pd.Series(fruit_avg_values)
-			df_values.to_csv("./graphs2/values/"+f"values_{max_fruits_analyzed}.csv", header=False)
+			df_values.to_csv("./results/values/"+f"values_{max_fruits_analyzed}.csv", header=False)
 
 			df_value_loss = pd.Series(fruit_value_loss)
-			df_value_loss.to_csv("./graphs2/value_loss/"+f"value_loss_{max_fruits_analyzed}.csv", header=False)
+			df_value_loss.to_csv("./results/value_loss/"+f"value_loss_{max_fruits_analyzed}.csv", header=False)
 			df_policy_loss = pd.Series(fruit_policy_loss)
-			df_policy_loss.to_csv("./graphs2/policy_loss/"+f"policy_loss_{max_fruits_analyzed}.csv", header=False)
+			df_policy_loss.to_csv("./results/policy_loss/"+f"policy_loss_{max_fruits_analyzed}.csv", header=False)
 			df_entropy_loss = pd.Series(fruit_entropy_loss)
-			df_entropy_loss.to_csv("./graphs2/entropy_loss/"+f"entropy_loss_{max_fruits_analyzed}.csv", header=False)
+			df_entropy_loss.to_csv("./results/entropy_loss/"+f"entropy_loss_{max_fruits_analyzed}.csv", header=False)
 			df_total_loss = pd.Series(fruit_total_loss)
-			df_total_loss.to_csv("./graphs2/total_loss/"+f"total_loss_{max_fruits_analyzed}.csv", header=False)
+			df_total_loss.to_csv("./results/total_loss/"+f"total_loss_{max_fruits_analyzed}.csv", header=False)
