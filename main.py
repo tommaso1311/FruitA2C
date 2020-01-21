@@ -13,10 +13,10 @@ n_inputs = 7
 n_actions = 2
 
 starting_index = 0
-final_index = 100
-step = 10
+final_index = 250000
+step = 1000
 
-gamma = 0.99
+gamma = 0.1
 epsilon = 0.0
 
 buffer_length = False
@@ -26,20 +26,20 @@ graphs_step = 5
 # save_games = True
 
 def main():
-	load_model = False
+	load_model = bool(starting_index)
 
 	tf.reset_default_graph()
 
 	if not os.path.exists(model_path):
 		os.makedirs(model_path)
 
-	with tf.device("/cpu:0"):
+	with tf.device("/gpu:0"):
 
 		trainer = tf.train.AdamOptimizer(learning_rate=1e-4)
 		agent = Agent(n_inputs, n_actions, trainer, model_path)
 		saver = tf.train.Saver(max_to_keep=5)
 
-	with tf.Session() as sess:
+	with tf.Session(config=tf.ConfigProto(allow_soft_placement=True)) as sess:
 		for i in range(starting_index, final_index, step):
 		
 			if load_model == True:

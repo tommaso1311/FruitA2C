@@ -131,4 +131,6 @@ dmypy.json
 # extra
 /dataset/
 /graphs/
+/graphs2/
 /model/
+/backup/

@@ -41,7 +41,7 @@ class Network:
 			self.advantages = tf.placeholder(shape=[None], dtype=tf.float32)
 
 			# Loss functions
-			self.value_loss = tf.reduce_sum(tf.square(self.target_value-tf.reshape(self.value,[-1])))
+			self.value_loss = 0.5*tf.reduce_sum(tf.square(self.target_value-tf.reshape(self.value,[-1])))
 			self.entropy_loss = -tf.reduce_sum(self.policy*tf.log(self.policy))
 			self.policy_loss = -tf.reduce_sum(tf.log(self.responsible_outputs)*self.advantages)
 			self.total_loss = 0.5*self.value_loss+self.policy_loss-self.entropy_loss*0.01

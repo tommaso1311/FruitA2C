@@ -8,6 +8,7 @@ tf.logging.set_verbosity(tf.logging.ERROR)
 import numpy as np
 import random
 import multiprocessing as mp
+import pandas as pd
 
 class Agent:
 
@@ -16,13 +17,12 @@ class Agent:
 		self.model_path = model_path
 		self.actions_available = utils.consts.ACTIONS
 		self.network = Network(n_inputs, n_actions, trainer)
-		self.summary_writer = tf.summary.FileWriter("./graphs")
 
 		self.online = online
 		
 		if online:
 			N_PROCS = 5
-			queue_buffer = 10
+			queue_buffer = 5
 
 			self.queue = mp.Queue(maxsize=queue_buffer)
 			self.pool = mp.Pool(N_PROCS, self.add_fruit_to_queue, (self.queue,))
@@ -81,12 +81,22 @@ class Agent:
 
 	def add_fruit_to_queue(self, queue):
 		while not queue.full():
-			fruit = Fruit.online()
+			fruit = Fruit.online(defects_list=[(1, 5)], lon_angle_rot=(-5, 15))
 			queue.put(fruit)
 
 	def train(self, sess, gamma, epsilon, saver,
 				fruits_analyzed, max_fruits_analyzed,
 				buffer_length=5, graphs_step=5):
+
+		summary_writer = tf.summary.FileWriter("./graphs")
+		
+		fruit_avg_rewards = []
+		fruit_avg_values = []
+
+		fruit_value_loss = []
+		fruit_policy_loss = []
+		fruit_entropy_loss = []
+		fruit_total_loss = []
 
 		with sess.as_default(), sess.graph.as_default():
 			while fruits_analyzed < max_fruits_analyzed:
@@ -121,24 +131,54 @@ class Agent:
 					fruit_avg_reward = np.mean(fruit_rewards)
 					fruit_avg_value = np.mean(fruit_values)
 
-				if len(fruit_buffer) != 0:
 					v_l, p_l, e_l, t_l = self.update(sess, fruit_buffer, gamma, 0.0)
 
-				if fruits_analyzed % 5 == 0 and fruits_analyzed != 0 and len(fruit_buffer) != 0:
+					if fruits_analyzed % 5 == 0 and fruits_analyzed != 0:
 
-					summary = tf.Summary()
-					summary.value.add(tag='Losses/Value Loss', simple_value=float(v_l))
-					summary.value.add(tag='Losses/Policy Loss', simple_value=float(p_l))
-					summary.value.add(tag='Losses/Entropy', simple_value=float(e_l))
-					summary.value.add(tag='Losses/Total Loss', simple_value=float(t_l))
-					summary.value.add(tag='Performances/Fruit Average Reward',
-										simple_value=float(fruit_avg_reward))
-					summary.value.add(tag='Performances/Fruit Average State Value',
-										simple_value=float(fruit_avg_value))
+						summary = tf.Summary()
+						summary.value.add(tag='Losses/Value Loss', simple_value=float(v_l))
+						summary.value.add(tag='Losses/Policy Loss', simple_value=float(p_l))
+						summary.value.add(tag='Losses/Entropy', simple_value=float(e_l))
+						summary.value.add(tag='Losses/Total Loss', simple_value=float(t_l))
+						summary.value.add(tag='Performances/Fruit Average Reward',
+											simple_value=float(fruit_avg_reward))
+						summary.value.add(tag='Performances/Fruit Average State Value',
+											simple_value=float(fruit_avg_value))
 
-					self.summary_writer.add_summary(summary, fruits_analyzed)
-					self.summary_writer.flush()
+						summary_writer.add_summary(summary, fruits_analyzed)
+						summary_writer.flush()
+
+					fruit_avg_rewards.append(fruit_avg_reward)
+					fruit_avg_values.append(fruit_avg_value)
+
+					fruit_value_loss.append(v_l)
+					fruit_policy_loss.append(p_l)
+					fruit_entropy_loss.append(e_l)
+					fruit_total_loss.append(t_l)
+
+				else:
+					fruit_avg_rewards.append(np.nan)
+					fruit_avg_values.append(np.nan)
+					
+					fruit_value_loss.append(np.nan)
+					fruit_policy_loss.append(np.nan)
+					fruit_entropy_loss.append(np.nan)
+					fruit_total_loss.append(np.nan)
 
 				fruits_analyzed += 1
 
 			saver.save(sess, self.model_path+'/model-'+str(fruits_analyzed)+'.cptk')
+
+			df_rewards = pd.Series(fruit_avg_rewards)
+			df_rewards.to_csv("./graphs2/rewards/"+f"rewards_{max_fruits_analyzed}.csv", header=False)
+			df_values = pd.Series(fruit_avg_values)
+			df_values.to_csv("./graphs2/values/"+f"values_{max_fruits_analyzed}.csv", header=False)
+
+			df_value_loss = pd.Series(fruit_value_loss)
+			df_value_loss.to_csv("./graphs2/value_loss/"+f"value_loss_{max_fruits_analyzed}.csv", header=False)
+			df_policy_loss = pd.Series(fruit_policy_loss)
+			df_policy_loss.to_csv("./graphs2/policy_loss/"+f"policy_loss_{max_fruits_analyzed}.csv", header=False)
+			df_entropy_loss = pd.Series(fruit_entropy_loss)
+			df_entropy_loss.to_csv("./graphs2/entropy_loss/"+f"entropy_loss_{max_fruits_analyzed}.csv", header=False)
+			df_total_loss = pd.Series(fruit_total_loss)
+			df_total_loss.to_csv("./graphs2/total_loss/"+f"total_loss_{max_fruits_analyzed}.csv", header=False)
