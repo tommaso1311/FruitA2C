@@ -6,15 +6,17 @@ import source.train as train
 from source.a2c.network import Network
 from source.a2c.agent import Agent
 # import source.test as test
+from os import path
+import pandas as pd
 
 model_path = "./model"
 
 n_inputs = 7
 n_actions = 2
 
-starting_index = 0
-final_index = 10
-step = 10
+starting_index = 50000
+final_index = 250000
+step = 1000
 
 gamma = 0.1
 epsilon = 0.0
@@ -24,6 +26,10 @@ graphs_step = 5
 
 # test_games = 10
 # save_games = True
+
+abs_path = os.getcwd()
+data_path = path.join(abs_path, "dataset")
+ready_path = path.join(data_path, "ready")
 
 def main():
 	load_model = bool(starting_index)
@@ -41,6 +47,9 @@ def main():
 
 	with tf.Session(config=tf.ConfigProto(allow_soft_placement=True)) as sess:
 		for i in range(starting_index, final_index, step):
+
+			dataset = path.join(ready_path, f"defects_generated_{i}_{i+step-1}.csv")
+			df = pd.read_csv(dataset)
 		
 			if load_model == True:
 				ckpt = tf.train.get_checkpoint_state(model_path)
@@ -49,7 +58,7 @@ def main():
 				sess.run(tf.global_variables_initializer())
 
 			agent.train(sess, gamma, epsilon, saver,
-						i, i+step, buffer_length, graphs_step)
+						i, i+step, buffer_length, graphs_step, df)
 
 			load_model = True
 

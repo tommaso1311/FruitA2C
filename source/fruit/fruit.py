@@ -44,22 +44,22 @@ class Fruit:
 		return cls(fruit_ID, shots)
 
 	@classmethod
-	def from_dataset(cls, dataset, fruit_ID):
-		df = pd.read_csv(dataset)
-		fruit = df[df["item"]==fruit_ID]
-		N_shots = fruit["view"].unique()
+	def from_dataset(cls, df, fruit_ID):
+		fruit = df[df["fruit"]==fruit_ID]
+		N_shots = fruit["shot"].unique()
 
-		max_x_pos = np.max(np.abs(fruit["x_pos"]))
-		max_y_pos = np.max(np.abs(fruit["y_pos"]))
+		max_x_pos = np.max(np.abs(fruit["pt_cen_x"]))
+		max_y_pos = np.max(np.abs(fruit["pt_cen_y"]))
 
 		shots = []
 		for shot_number in N_shots:
 			defects = []
-			for index, defect in fruit[fruit["view"]==shot_number].iterrows():
-				defect_ID = defect["defect"]
+			for index, defect in fruit[fruit["shot"]==shot_number].iterrows():
+				defect_ID = defect["defect_id"]
 				props = {}
-				props["x_pos"] = defect["x_pos"]/max_x_pos
-				props["y_pos"] = defect["y_pos"]/max_y_pos
+				props["x_pos"] = defect["pt_cen_x"]/max_x_pos
+				props["y_pos"] = defect["pt_cen_y"]/max_y_pos
+
 				props["eccentricity"] = defect["eccentricity"]
 				props["circularity"] = defect["circularity"]
 				props["solidity"] = defect["solidity"]
@@ -150,11 +150,13 @@ class Fruit:
 			self.shots_analyzed.append(self._current_shot)
 
 	def set_starting_UUIDs(self):
-
-		self.update_current_shot()
-		for _ in self._current_shot:
-			self.update_current_defect()
-			self.apply_UUID()
+		try:
+			self.update_current_shot()
+			for _ in self._current_shot:
+				self.update_current_defect()
+				self.apply_UUID()
+		except:
+			pass
 
 	def get_defects_analyzed(self):
 

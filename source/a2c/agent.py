@@ -86,7 +86,7 @@ class Agent:
 
 	def train(self, sess, gamma, epsilon, saver,
 				fruits_analyzed, max_fruits_analyzed,
-				buffer_length=5, graphs_step=5):
+				buffer_length=5, graphs_step=5, df=None):
 
 		summary_writer = tf.summary.FileWriter("./graphs")
 		
@@ -103,7 +103,7 @@ class Agent:
 
 				# fruit = Fruit.from_file(fruits_analyzed)
 				# fruit = self.queue.get()
-				fruit = Fruit.from_dataset("./dataset/kiwi_ready.csv", fruits_analyzed)
+				fruit = Fruit.from_dataset(df, fruits_analyzed)
 
 				print(f"Analyzing {fruits_analyzed} over {max_fruits_analyzed}", end="\r", flush=True)
 
